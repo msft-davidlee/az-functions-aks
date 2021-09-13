@@ -51,6 +51,7 @@ jobs:
 
       - id: buid-and-deploy
         name: Build Azure environment
+        working-directory: .\tools
         run: |
           .\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
             -APP_PATH app `
