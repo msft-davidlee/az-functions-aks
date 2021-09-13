@@ -55,6 +55,7 @@ az acr login --name $acrName
 az aks install-cli
 az aks get-credentials --resource-group $rgName --name $aksName
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
+kubectl create namespace keda
 func kubernetes install
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
