@@ -49,3 +49,13 @@ $deployOutputText = (az deployment group create --name $deploymentName --resourc
 
 $deployOutput = $deployOutputText | ConvertFrom-Json
 $acrName = $deployOutput.properties.outputs.acrName.value
+$aksName = $deployOutput.properties.outputs.aksName.value
+
+az acr login --name $acrName
+az aks install-cli
+az aks get-credentials --resource-group $rgName --name $aksName
+
+func kubernetes install
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to install func kubernetes."
+}
