@@ -46,13 +46,13 @@ jobs:
       - name: Azure CLI Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.MS_AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
       - id: buid-and-deploy
         name: Build Azure environment
         run: |
-          ${{ github.workspace }}\tools\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
+          .\tools\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
             -APP_PATH ${{ github.workspace }}\app `
             -BUILD_ENV ${{ needs.setup.outputs.build_env }} `
             -RESOURCE_GROUP ${{ secrets.RESOURCE_GROUP }} `
