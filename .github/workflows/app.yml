@@ -1,0 +1,42 @@
+on: 
+  push:
+  workflow_dispatch:
+    inputs:
+      environmentselector:
+        description: 'Environment selector'     
+        required: false
+        default: 'default'
+
+jobs:
+  setup:
+    name: Choose Secrets Environment Job
+    runs-on: windows-latest
+    steps:
+      - id: setup
+        name: Setup Environment Setp
+        run: |
+          $envSelector = "${{ github.event.inputs.environmentselector }}"
+          Write-Host "Environment Selector: $envSelector Branch ${{ github.ref }}"
+          if ($envSelector -eq '' -or $envSelector -eq 'default') {            
+            if ('${{ github.ref }}' -eq 'refs/heads/main') { 
+              echo "::set-output name=build_env::prod"              
+            } else {
+              echo "::set-output name=build_env::dev"              
+            }
+          } else {
+            echo "::set-output name=build_env::$envSelector"            
+          }
+    outputs:
+      build_env: ${{ steps.setup.outputs.build_env }}      
+
+  build_deploy:
+    name: Build, Deploy Environment Job
+    needs: setup
+    environment: ${{ needs.setup.outputs.build_env }}
+    runs-on: windows-latest
+    steps:    
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: 'msft-davidlee/az-blazor-wasm'
+          ref: 'refs/heads/main'
