@@ -60,8 +60,8 @@ func kubernetes install
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
-Push-Location $APP_PATH
+Push-Location $APP_PATH\MyTodo.Api
 func kubernetes deploy --name app --registry $acrName
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to deploy func worload."
+    throw "An error has occured. Unable to deploy func workload."
 }
