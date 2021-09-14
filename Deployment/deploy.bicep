@@ -1,5 +1,5 @@
 param prefix string
-param environment string
+param appEnvironment string
 param branch string
 param location string
 param subnetId string
@@ -10,10 +10,10 @@ param managedUserId string
 param scriptVersion string = utcNow()
 param kubernetesVersion string = '1.21.2'
 
-var stackName = '${prefix}${environment}'
+var stackName = '${prefix}${appEnvironment}'
 var tags = {
   'stack-name': stackName
-  'environment': environment
+  'environment': appEnvironment
   'branch': branch
 }
 
@@ -95,5 +95,20 @@ resource customscript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   }
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
+  name: stackName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
+  }
+  tags: tags
+}
+
 output acrName string = acr.name
 output aksName string = aks.name
+output storageConnection string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'

@@ -39,7 +39,7 @@ $rgName = "$RESOURCE_GROUP-$BUILD_ENV"
 $deployOutputText = (az deployment group create --name $deploymentName --resource-group $rgName --template-file Deployment/deploy.bicep --parameters `
         location=$location `
         prefix=$PREFIX `
-        environment=$BUILD_ENV `
+        appEnvironment=$BUILD_ENV `
         branch=$GITHUB_REF `
         clientId=$CLIENT_ID `
         clientSecret=$CLIENT_SECRET `
@@ -50,6 +50,7 @@ $deployOutputText = (az deployment group create --name $deploymentName --resourc
 $deployOutput = $deployOutputText | ConvertFrom-Json
 $acrName = $deployOutput.properties.outputs.acrName.value
 $aksName = $deployOutput.properties.outputs.aksName.value
+$storageConnection = $deployOutput.properties.outputs.storageConnection.value
 
 # Install Kubernets CLI and Login to AKS
 az aks install-cli
@@ -108,7 +109,7 @@ if (!$list -or !$list.Contains("app")) {
 
 $deployment = Get-Content Deployment/deployment.yaml
 $deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
-$deployment = $deployment.Replace('"%AZURE_STORAGE_CONNECTION%"', "test")
+$deployment = $deployment.Replace('%AZURE_STORAGE_CONNECTION%', $storageConnection)
 $deployment = $deployment.Replace('"%AZURE_CLIENT_ID%"', "test")
 $deployment = $deployment.Replace('"%AZURE_CLIENT_SECRET%"', "test")
 
