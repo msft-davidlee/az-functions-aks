@@ -108,9 +108,9 @@ if (!$list -or !$list.Contains("app")) {
 
 $deployment = Get-Content Deployment/deployment.yaml
 $deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
-$deployment = $deployment.Replace('"%AZURE_STORAGE_CONNECTION%"', "")
-$deployment = $deployment.Replace('"%AZURE_CLIENT_ID%"', "")
-$deployment = $deployment.Replace('"%AZURE_CLIENT_SECRET%"', "")
+$deployment = $deployment.Replace('"%AZURE_STORAGE_CONNECTION%"', "test")
+$deployment = $deployment.Replace('"%AZURE_CLIENT_ID%"', "test")
+$deployment = $deployment.Replace('"%AZURE_CLIENT_SECRET%"', "test")
 
 $deployment
 
