@@ -65,12 +65,24 @@ func kubernetes install
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
-Push-Location $APP_PATH
 
-az acr build --image app:v1 -r $acrName --file ./MyTodo.Api/Dockerfile .
+$list = az acr repository list --name $acrName | ConvertFrom-Json
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to build image."
+    throw "An error has occured. Unable to list from repository"
 }
+
+if (!$list.Contains("app")) {
+    Push-Location $APP_PATH
+    az acr build --image app:v1 -r $acrName --file ./MyTodo.Api/Dockerfile .
+    
+    if ($LastExitCode -ne 0) {
+        throw "An error has occured. Unable to build image."
+    }
+
+    Pop-Location
+}
+
+Push-Location $APP_PATH\MyTodo.Api
 
 func kubernetes deploy --name app --registry "$acrName.azurecr.io" --namespace app --dry-run
 if ($LastExitCode -ne 0) {
