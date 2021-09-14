@@ -66,14 +66,19 @@ kubectl create namespace app
 # https://docs.microsoft.com/en-us/azure/azure-functions/functions-core-tools-reference?tabs=v2#func-kubernetes-deploy
 # https://github.com/kedacore/http-add-on/blob/main/docs/install.md#installing-keda
 
-helm repo add kedacore https://kedacore.github.io/charts
-helm repo update
-helm install keda kedacore/keda --namespace keda
-# Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
-helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+$repoList = helm repo list --output json | ConvertFrom-Json
+$foundkeda = ($repoList | Where-Object { $_.name -eq "keda" }).Count -eq 1
 
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to install func kubernetes."
+if (!$foundkeda) {
+    helm repo add kedacore https://kedacore.github.io/charts
+    helm repo update
+    helm install keda kedacore/keda --namespace keda
+    # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
+    helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+    
+    if ($LastExitCode -ne 0) {
+        throw "An error has occured. Unable to install keda."
+    }    
 }
 
 # Login to ACR
