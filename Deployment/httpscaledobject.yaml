@@ -3,7 +3,6 @@ apiVersion: http.keda.sh/v1alpha1
 metadata:
     name: httpfuncapp
 spec:
-    host: "contosoapi.com"
     scaleTargetRef:
         deployment: httpfuncapp
         service: httpfuncapp

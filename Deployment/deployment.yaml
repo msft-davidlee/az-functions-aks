@@ -10,8 +10,6 @@ spec:
     matchLabels:
       app: httpfuncapp
   template:
-    metadata:
-      app: httpfuncapp
     spec:
       containers:
         - name: httpfuncapp

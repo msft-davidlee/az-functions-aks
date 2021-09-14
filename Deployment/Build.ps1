@@ -116,8 +116,19 @@ $deployment
 
 Set-Content -Path "deployment.tmp" -Value $deployment
 kubectl apply -f "deployment.tmp" --namespace app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to run deployment.tmp."
+}
+
 kubectl apply -f Deployment/service.yaml --namespace app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to run service.yaml."
+}
+
 kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to run httpscaledobject.yaml."
+}
 
 # Push-Location $APP_PATH\MyTodo.Api
 
