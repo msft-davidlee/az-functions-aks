@@ -60,7 +60,7 @@ npm i -g azure-functions-core-tools@3 --unsafe-perm true
 
 # Create namespaces for keda and your app
 $kedaNamespace = kubectl get namespace keda
-if (!$kedaNamespace){
+if (!$kedaNamespace) {
     kubectl create namespace keda
     kubectl create namespace app
     if ($LastExitCode -ne 0) {
@@ -72,11 +72,15 @@ if (!$kedaNamespace){
 # https://docs.microsoft.com/en-us/azure/azure-functions/functions-core-tools-reference?tabs=v2#func-kubernetes-deploy
 # https://github.com/kedacore/http-add-on/blob/main/docs/install.md#installing-keda
 
-helm repo add kedacore https://kedacore.github.io/charts
-helm repo update
-helm install keda kedacore/keda --namespace keda
-# Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
-helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+$nlist = kubectl get deployment --namespace keda -o json | ConvertFrom-Json
+
+if (!$nlist -or $nlist.items.Length -eq 0) {
+    helm repo add kedacore https://kedacore.github.io/charts
+    helm repo update
+    helm install keda kedacore/keda --namespace keda
+    # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
+    helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+}
 
 # Login to ACR
 az acr login --name $acrName
@@ -91,7 +95,7 @@ if ($LastExitCode -ne 0) {
 
 # Build your app with ACR build command
 $imageName = "app:v1"
-if (!$list.Contains("app")) {
+if (!$list -or !$list.Contains("app")) {
     Push-Location $APP_PATH
     az acr build --image $imageName -r $acrName --file ./MyTodo.Api/Dockerfile .
     
