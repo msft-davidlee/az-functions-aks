@@ -76,15 +76,15 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
 
-$list = az acr repository list --name $acrName | ConvertFrom-Json
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to list from repository"
-}
-
 # Login to ACR
 az acr login --name $acrName
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to login to acr."
+}
+
+$list = az acr repository list --name $acrName | ConvertFrom-Json
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to list from repository"
 }
 
 # Build your app with ACR build command
