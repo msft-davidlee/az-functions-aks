@@ -56,12 +56,13 @@ az aks install-cli
 az aks get-credentials --resource-group $rgName --name $aksName
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
 kubectl create namespace keda
+kubectl create namespace app
 func kubernetes install
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
 Push-Location $APP_PATH\MyTodo.Api
-func kubernetes deploy --name app --registry $acrName
+func kubernetes deploy --name app --registry "$acrNamev.azurecr.io" --namespace app
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to deploy func workload."
 }
