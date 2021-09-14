@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpfuncapp
+  namespace: app
+  labels:
+    app: httpfuncapp
+spec:
+  selector:
+    matchLabels:
+      app: httpfuncapp
+  template:
+    metadata:
+      app: httpfuncapp
+    spec:
+      containers:
+        - name: httpfuncapp
+          image: "%IMAGE%"          
+          env:
+          - name: AzureWebJobsStorage
+            value: "%AZURE_STORAGE_CONNECTION%"
+          - name: FUNCTIONS_WORKER_RUNTIME
+            value: "dotnet-isolated"
+          - name: TableStorageConnection
+            value: "%AZURE_STORAGE_CONNECTION%"
+          - name: AzureAd:ClientId
+            value: "%AZURE_CLIENT_ID%"
+          - name: AzureAd:Instance
+            value: "%AZURE_CLIENT_SECRET%"                                                
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http

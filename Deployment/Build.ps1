@@ -51,17 +51,27 @@ $deployOutput = $deployOutputText | ConvertFrom-Json
 $acrName = $deployOutput.properties.outputs.acrName.value
 $aksName = $deployOutput.properties.outputs.aksName.value
 
-az acr login --name $acrName
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to login to acr."
-}
-
+# Install Kubernets CLI and Login to AKS
 az aks install-cli
 az aks get-credentials --resource-group $rgName --name $aksName
+
+# Install Azure Function Core tools
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
+
+# Create namespaces for keda and your app
 kubectl create namespace keda
 kubectl create namespace app
-func kubernetes install
+
+# These are two ways to install KEDA. We are using the second one.
+# https://docs.microsoft.com/en-us/azure/azure-functions/functions-core-tools-reference?tabs=v2#func-kubernetes-deploy
+# https://github.com/kedacore/http-add-on/blob/main/docs/install.md#installing-keda
+
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda --namespace keda
+# Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
+helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
@@ -71,6 +81,13 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to list from repository"
 }
 
+# Login to ACR
+az acr login --name $acrName
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to login to acr."
+}
+
+# Build your app with ACR build command
 $imageName = "app:v1"
 if (!$list.Contains("app")) {
     Push-Location $APP_PATH
@@ -83,30 +100,43 @@ if (!$list.Contains("app")) {
     Pop-Location
 }
 
-Push-Location $APP_PATH\MyTodo.Api
+$deployment = Get-Content Deployment/deployment.yaml
+$deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
+$deployment = $deployment.Replace('"%AZURE_STORAGE_CONNECTION%"', "")
+$deployment = $deployment.Replace('"%AZURE_CLIENT_ID%"', "")
+$deployment = $deployment.Replace('"%AZURE_CLIENT_SECRET%"', "")
 
-$localSettings = @{
-    "IsEncrypted" = $false;
-    "Values"      = @(
-        @{"AzureWebJobsStorage" = "UseDevelopmentStorage=true"; };
-        @{"FUNCTIONS_WORKER_RUNTIME" = "dotnet-isolated"; };
-        @{"TableStorageConnection" = "UseDevelopmentStorage=true"; };
-        @{"AzureAd:ClientId" = ""; };
-        @{"AzureAd:Instance" = ""; };
-    );
-    "Host"        = @{
-        "CORS" = "*";
-    };
-}
+$deployment
 
-Set-Content -Path .\local.settings.json -Value $localSettings
+Set-Content -Path "deployment.tmp" -Value $deployment
+kubectl apply -f "deployment.tmp" --namespace app
+kubectl apply -f Deployment/service.yaml --namespace app
+kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
 
-$yml = func kubernetes deploy --name appdeployment --registry "$acrName.azurecr.io" --namespace app --image-name $imageName --dry-run
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to generate func yml."
-}
+# Push-Location $APP_PATH\MyTodo.Api
 
-$yml
+# $localSettings = @{
+#     "IsEncrypted" = $false;
+#     "Values"      = @(
+#         @{"AzureWebJobsStorage" = "UseDevelopmentStorage=true"; };
+#         @{"FUNCTIONS_WORKER_RUNTIME" = "dotnet-isolated"; };
+#         @{"TableStorageConnection" = "UseDevelopmentStorage=true"; };
+#         @{"AzureAd:ClientId" = ""; };
+#         @{"AzureAd:Instance" = ""; };
+#     );
+#     "Host"        = @{
+#         "CORS" = "*";
+#     };
+# }
 
-Set-Content -Path "temp.yml" -Value $yml
-kubectl apply -f "temp.yml" --namespace app
+# Set-Content -Path .\local.settings.json -Value $localSettings
+
+# $yml = func kubernetes deploy --name appdeployment --registry "$acrName.azurecr.io" --namespace app --image-name $imageName --dry-run
+# if ($LastExitCode -ne 0) {
+#     throw "An error has occured. Unable to generate func yml."
+# }
+
+# $yml
+
+# Set-Content -Path "temp.yml" -Value $yml
+# kubectl apply -f "temp.yml" --namespace app
