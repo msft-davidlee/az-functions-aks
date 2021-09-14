@@ -65,9 +65,9 @@ func kubernetes install
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
-Push-Location $APP_PATH\MyTodo.Api
+Push-Location $APP_PATH
 
-az acr build --image app:v1 -r $acrName --file ./Dockerfile .
+az acr build --image app:v1 -r $acrName --file ./MyTodo.Api/Dockerfile .
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to build image."
 }
