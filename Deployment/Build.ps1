@@ -66,7 +66,10 @@ kubectl create namespace app
 # https://docs.microsoft.com/en-us/azure/azure-functions/functions-core-tools-reference?tabs=v2#func-kubernetes-deploy
 # https://github.com/kedacore/http-add-on/blob/main/docs/install.md#installing-keda
 
-$repoList = helm repo list --output json | ConvertFrom-Json
+$repoJson = helm repo list --output json
+$repoJson
+$repoList = $repoJson | ConvertFrom-Json
+
 $foundkeda = ($repoList | Where-Object { $_.name -eq "keda" }).Count -eq 1
 
 if (!$foundkeda) {
