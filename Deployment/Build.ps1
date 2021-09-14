@@ -59,30 +59,24 @@ az aks get-credentials --resource-group $rgName --name $aksName
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
 
 # Create namespaces for keda and your app
-kubectl create namespace keda
-kubectl create namespace app
+$kedaNamespace = kubectl get namespace keda
+if (!$kedaNamespace){
+    kubectl create namespace keda
+    kubectl create namespace app
+    if ($LastExitCode -ne 0) {
+        throw "An error has occured. Unable to create namespace."
+    }    
+}
 
 # These are two ways to install KEDA. We are using the second one.
 # https://docs.microsoft.com/en-us/azure/azure-functions/functions-core-tools-reference?tabs=v2#func-kubernetes-deploy
 # https://github.com/kedacore/http-add-on/blob/main/docs/install.md#installing-keda
 
-$repoJson = helm repo list --output json
-$repoJson
-$repoList = $repoJson | ConvertFrom-Json
-
-$foundkeda = ($repoList | Where-Object { $_.name -eq "keda" }).Count -eq 1
-
-if (!$foundkeda) {
-    helm repo add kedacore https://kedacore.github.io/charts
-    helm repo update
-    helm install keda kedacore/keda --namespace keda
-    # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
-    helm install http-add-on kedacore/keda-add-ons-http --namespace keda
-    
-    if ($LastExitCode -ne 0) {
-        throw "An error has occured. Unable to install keda."
-    }    
-}
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+helm install keda kedacore/keda --namespace keda
+# Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
+helm install http-add-on kedacore/keda-add-ons-http --namespace keda
 
 # Login to ACR
 az acr login --name $acrName
