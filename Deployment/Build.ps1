@@ -52,6 +52,10 @@ $acrName = $deployOutput.properties.outputs.acrName.value
 $aksName = $deployOutput.properties.outputs.aksName.value
 
 az acr login --name $acrName
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to login to acr."
+}
+
 az aks install-cli
 az aks get-credentials --resource-group $rgName --name $aksName
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
@@ -62,7 +66,13 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to install func kubernetes."
 }
 Push-Location $APP_PATH\MyTodo.Api
-func kubernetes deploy --name app --registry "$acrName.azurecr.io" --namespace app
+
+az acr build --image app:v1 -r $acrName --file ./Dockerfile .
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to build image."
+}
+
+func kubernetes deploy --name app --registry "$acrName.azurecr.io" --namespace app --dry-run
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to deploy func workload."
 }
