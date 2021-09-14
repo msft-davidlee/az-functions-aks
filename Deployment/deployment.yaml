@@ -24,9 +24,9 @@ spec:
             value: "dotnet-isolated"
           - name: TableStorageConnection
             value: "%AZURE_STORAGE_CONNECTION%"
-          - name: AzureAd:ClientId
+          - name: "AzureAd:ClientId"
             value: "%AZURE_CLIENT_ID%"
-          - name: AzureAd:Instance
+          - name: "AzureAd:Instance"
             value: "%AZURE_CLIENT_SECRET%"                                                
           ports:
             - name: http
