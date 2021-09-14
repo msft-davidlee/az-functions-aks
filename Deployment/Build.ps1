@@ -71,9 +71,10 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to list from repository"
 }
 
+$imageName = "app:v1"
 if (!$list.Contains("app")) {
     Push-Location $APP_PATH
-    az acr build --image app:v1 -r $acrName --file ./MyTodo.Api/Dockerfile .
+    az acr build --image $imageName -r $acrName --file ./MyTodo.Api/Dockerfile .
     
     if ($LastExitCode -ne 0) {
         throw "An error has occured. Unable to build image."
@@ -84,7 +85,28 @@ if (!$list.Contains("app")) {
 
 Push-Location $APP_PATH\MyTodo.Api
 
-func kubernetes deploy --name app --registry "$acrName.azurecr.io" --namespace app --dry-run
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to deploy func workload."
+$localSettings = @{
+    "IsEncrypted" = $false;
+    "Values"      = @(
+        @{"AzureWebJobsStorage" = "UseDevelopmentStorage=true"; };
+        @{"FUNCTIONS_WORKER_RUNTIME" = "dotnet-isolated"; };
+        @{"TableStorageConnection" = "UseDevelopmentStorage=true"; };
+        @{"AzureAd:ClientId" = ""; };
+        @{"AzureAd:Instance" = ""; };
+    );
+    "Host"        = @{
+        "CORS" = "*";
+    };
 }
+
+Set-Content -Path .\local.settings.json -Value $localSettings
+
+$yml = func kubernetes deploy --name appdeployment --registry "$acrName.azurecr.io" --namespace app --image-name $imageName --dry-run
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to generate func yml."
+}
+
+$yml
+
+Set-Content -Path "temp.yml" -Value $yml
+kubectl apply -f "temp.yml" --namespace app
