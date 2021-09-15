@@ -77,7 +77,7 @@ while ($true) {
             Start-Sleep -Seconds 5
         }
         else {
-            throw "An error has occured. Error with getting namespace."
+            throw "An error has occured. Error with getting namespace. Error: $kedaNamespace"
         }    
     }
     else {
