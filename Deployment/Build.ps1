@@ -84,6 +84,8 @@ if (!$nlist -or $nlist.items.Length -eq 0) {
     helm install keda kedacore/keda --namespace keda
     # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
     helm install http-add-on kedacore/keda-add-ons-http --namespace keda
+} else {
+    Write-Host "Skipped installing kedacore and http. See: $nlist"
 }
 
 # Login to ACR
