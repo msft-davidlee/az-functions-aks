@@ -61,5 +61,6 @@ jobs:
             -GITHUB_REF ${{ github.ref }} `
             -CLIENT_ID ${{ secrets.CLIENT_ID }} `
             -CLIENT_SECRET ${{ secrets.CLIENT_SECRET }} `
-            -SSH_PUBLIC_KEY "${{ secrets.SSH_PUBLIC_KEY }}" `
+            -AD_CLIENT_ID ${{ secrets.AD_CLIENT_ID }} `
+            -AD_INSTANCE ${{ secrets.AD_INSTANCE }} `            
             -MANAGED_USER_ID ${{ secrets.MANAGED_USER_ID }}

@@ -7,6 +7,8 @@ param(
     [string]$GITHUB_REF,
     [string]$CLIENT_ID,
     [string]$CLIENT_SECRET,
+    [string]$AD_CLIENT_ID,
+    [string]$AD_INSTANCE,
     [string]$MANAGED_USER_ID)
 
 $ErrorActionPreference = "Stop"
@@ -110,10 +112,8 @@ if (!$list -or !$list.Contains("app")) {
 $deployment = Get-Content Deployment/deployment.yaml
 $deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
 $deployment = $deployment.Replace('%AZURE_STORAGE_CONNECTION%', $storageConnection)
-$deployment = $deployment.Replace('"%AZURE_CLIENT_ID%"', "test")
-$deployment = $deployment.Replace('"%AZURE_CLIENT_SECRET%"', "test")
-
-$deployment
+$deployment = $deployment.Replace('"%AD_CLIENT_ID%"', $AD_CLIENT_ID)
+$deployment = $deployment.Replace('"%AD_INSTANCE%"', $AD_INSTANCE)
 
 Set-Content -Path "deployment.tmp" -Value $deployment
 kubectl apply -f "deployment.tmp" --namespace app
@@ -130,31 +130,3 @@ kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to run httpscaledobject.yaml."
 }
-
-# Push-Location $APP_PATH\MyTodo.Api
-
-# $localSettings = @{
-#     "IsEncrypted" = $false;
-#     "Values"      = @(
-#         @{"AzureWebJobsStorage" = "UseDevelopmentStorage=true"; };
-#         @{"FUNCTIONS_WORKER_RUNTIME" = "dotnet-isolated"; };
-#         @{"TableStorageConnection" = "UseDevelopmentStorage=true"; };
-#         @{"AzureAd:ClientId" = ""; };
-#         @{"AzureAd:Instance" = ""; };
-#     );
-#     "Host"        = @{
-#         "CORS" = "*";
-#     };
-# }
-
-# Set-Content -Path .\local.settings.json -Value $localSettings
-
-# $yml = func kubernetes deploy --name appdeployment --registry "$acrName.azurecr.io" --namespace app --image-name $imageName --dry-run
-# if ($LastExitCode -ne 0) {
-#     throw "An error has occured. Unable to generate func yml."
-# }
-
-# $yml
-
-# Set-Content -Path "temp.yml" -Value $yml
-# kubectl apply -f "temp.yml" --namespace app

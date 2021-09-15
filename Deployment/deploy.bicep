@@ -17,6 +17,18 @@ var tags = {
   'branch': branch
 }
 
+resource wks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+  name: stackName
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+  }
+}
+
 resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
   name: stackName
   location: location
@@ -50,6 +62,29 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
       clientId: clientId
       secret: clientSecret
     }
+    addonProfiles: {
+      omsagent: {
+        enabled: true
+        config: {
+          logAnalyticsWorkspaceResourceID: wks.id
+        }
+      }
+    }
+  }
+}
+
+resource cin 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  name: stackName
+  location: location
+  tags: tags
+  plan: {
+    name: stackName
+    product: 'OMSGallery/ContainerInsights'
+    publisher: 'Microsoft'
+    promotionCode: ''
+  }
+  properties: {
+    workspaceResourceId: wks.id
   }
 }
 
