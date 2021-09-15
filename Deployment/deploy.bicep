@@ -74,7 +74,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
 }
 
 resource cin 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: stackName
+  name: 'ContainerInsights(${stackName})'
   location: location
   tags: tags
   plan: {
