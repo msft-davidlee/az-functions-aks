@@ -69,7 +69,8 @@ while ($true) {
         $kedaNamespace = kubectl get namespace keda 2>&1
     }
     catch {
-        $message = $_
+        $_
+        $message = $_.Message
         if ($message.Contains("Unable to connect to the server")) {
             if ($i -eq 10) {
                 throw "Time out. An error has occured. Error with getting namespace."
