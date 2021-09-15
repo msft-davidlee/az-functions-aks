@@ -6,7 +6,7 @@ spec:
     scaleTargetRef:
         deployment: httpfuncapp
         service: httpfuncapp
-        port: 8080
+        port: 80
     replicas:
         min: 1
         max: 2

@@ -119,15 +119,20 @@ $deployment = $deployment.Replace('"%AD_INSTANCE%"', $AD_INSTANCE)
 Set-Content -Path "deployment.tmp" -Value $deployment
 kubectl apply -f "deployment.tmp" --namespace app
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to run deployment.tmp."
+    throw "An error has occured. Unable to converted apply deployment.yaml."
 }
 
 kubectl apply -f Deployment/service.yaml --namespace app
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to run service.yaml."
+    throw "An error has occured. Unable to apply service.yaml."
 }
 
 kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to run httpscaledobject.yaml."
+    throw "An error has occured. Unable to apply httpscaledobject.yaml."
+}
+
+kubectl apply -f Deployment/ingress.yaml --namespace app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to apply ingress.yaml."
 }
