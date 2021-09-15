@@ -1,11 +1,11 @@
 kind: HTTPScaledObject
 apiVersion: http.keda.sh/v1alpha1
 metadata:
-    name: httpfuncapp
+    name: httpfuncapp-scaled-object
 spec:
     scaleTargetRef:
-        deployment: httpfuncapp
-        service: httpfuncapp
+        deployment: httpfuncapp-deployed-app
+        service: httpfuncapp-service
         port: 80
     replicas:
         min: 1

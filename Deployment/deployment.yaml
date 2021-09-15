@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: httpfuncapp
+  name: httpfuncapp-deployed-app
   namespace: app
   labels:
     app: httpfuncapp
