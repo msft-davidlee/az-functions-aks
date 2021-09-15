@@ -64,27 +64,26 @@ npm i -g azure-functions-core-tools@3 --unsafe-perm true
 $i = 0
 while ($true) {
     # Let's check to see if we have keda installed on our cluster.
-    $kedaNamespace = kubectl get namespace keda 2>&1
-    if ($LastExitCode -ne 0) {
-        # This may happen if the service is still spinning up.
-        if ($kedaNamespace.Contains("Unable to connect to the server")) {
+    try {
+        Write-Host "Checking if keda namespace exist"
+        $kedaNamespace = kubectl get namespace keda 2>&1
+    }
+    catch {
+        $message = $_
+        if ($message.Contains("Unable to connect to the server")) {
             if ($i -eq 10) {
                 throw "Time out. An error has occured. Error with getting namespace."
             }
-
+    
             $i++
             Write-Warning "Retrying as AKS is still spining up..."
             Start-Sleep -Seconds 5
         }
         else {
-            throw "An error has occured. Error with getting namespace. Error: $kedaNamespace"
-        }    
-    }
-    else {
-        break
+            throw "Get namespace error: $message"
+        }
     }
 }
-
 
 if (!$kedaNamespace) {
     # Create namespaces for keda and your app
