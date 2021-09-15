@@ -62,5 +62,5 @@ jobs:
             -CLIENT_ID ${{ secrets.CLIENT_ID }} `
             -CLIENT_SECRET ${{ secrets.CLIENT_SECRET }} `
             -AD_CLIENT_ID ${{ secrets.AD_CLIENT_ID }} `
-            -AD_INSTANCE ${{ secrets.AD_INSTANCE }} `            
+            -AD_INSTANCE ${{ secrets.AD_INSTANCE }} `
             -MANAGED_USER_ID ${{ secrets.MANAGED_USER_ID }}
