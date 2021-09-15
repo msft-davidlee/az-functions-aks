@@ -78,7 +78,7 @@ if (!$kedaNamespace) {
 
 $nlist = kubectl get deployment --namespace keda -o json | ConvertFrom-Json
 
-if (!$nlist -or $nlist.items.Length -eq 0) {
+if (!$nlist -or $nlist.items.Count -eq 0) {
     helm repo add kedacore https://kedacore.github.io/charts
     helm repo update
     helm install keda kedacore/keda --namespace keda
