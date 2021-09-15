@@ -62,9 +62,6 @@ az aks get-credentials --resource-group $rgName --name $aksName
 npm i -g azure-functions-core-tools@3 --unsafe-perm true
 
 $kedaNamespace = kubectl get namespace keda
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to create namespace."
-}
 
 if (!$kedaNamespace) {
     # Create namespaces for keda and your app
