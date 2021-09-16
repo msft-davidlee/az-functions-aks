@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: httpfuncapp-ingress
+  name: httpfuncapp
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
@@ -13,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: httpfuncapp-deployed-app-interceptor-proxy
+            name: httpfuncapp-interceptor-proxy
             port:
               number: 80

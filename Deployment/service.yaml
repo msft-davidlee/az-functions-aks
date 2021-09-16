@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: httpfuncapp-service
+  name: httpfuncapp
   labels:
     app: httpfuncapp
 spec:
