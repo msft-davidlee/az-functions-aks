@@ -13,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: httpfuncapp-svc
+            name: httpfuncapp-deployment-interceptor-proxy
             port:
               number: 80
