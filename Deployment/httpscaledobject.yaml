@@ -4,8 +4,8 @@ metadata:
     name: httpfuncapp
 spec:
     scaleTargetRef:
-        deployment: httpfuncapp
-        service: httpfuncapp
+        deployment: httpfuncapp-deployment
+        service: httpfuncapp-svc
         port: 80
     replicas:
         min: 1
