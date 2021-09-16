@@ -73,22 +73,6 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
   }
 }
 
-var cinName = 'ContainerInsights(${stackName})'
-resource cin 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: cinName
-  location: location
-  tags: tags
-  plan: {
-    name: cinName
-    product: 'OMSGallery/ContainerInsights'
-    publisher: 'Microsoft'
-    promotionCode: ''
-  }
-  properties: {
-    workspaceResourceId: wks.id
-  }
-}
-
 resource acr 'Microsoft.ContainerRegistry/registries@2021-06-01-preview' = {
   name: stackName
   location: location

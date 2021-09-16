@@ -13,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: keda-add-ons-http-interceptor-proxy
+            name: httpfuncapp-deployed-app-interceptor-proxy
             port:
               number: 80
