@@ -1,7 +1,8 @@
 param([int]$Seconds = 60, [int]$Intensity = 5, $TestApi)
 
 $report = @{
-    jobs  = @();
+    jobs = @();
+    avg  = 0
 }
 
 for ($x = 0; $x -lt $Intensity; $x++) { 
@@ -48,5 +49,17 @@ for ($x = 0; $x -lt $Intensity; $x++) {
 
     $report.jobs += $job
 }
+
+While (Get-Job -State "Running") {    
+    Get-Job
+    Start-Sleep 10
+}
+
+$total = 0
+for ($x = 0; $x -lt $Intensity; $x++) { 
+    $total += Receive-Job -Job $report.jobs[$x]
+}
+
+$report.avg = $total / $Intensity
 
 return $report
