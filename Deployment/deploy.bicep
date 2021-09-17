@@ -129,6 +129,16 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   tags: tags
 }
 
+resource tableSvcInStorageAccount 'Microsoft.Storage/storageAccounts/tableServices@2021-04-01' = {
+  parent: storageAccount
+  name: 'default'
+}
+
+resource tableInStorageAccount 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-04-01' = {
+  parent: tableSvcInStorageAccount
+  name: 'TodoItem'
+}
+
 output acrName string = acr.name
 output aksName string = aks.name
 output storageConnection string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
