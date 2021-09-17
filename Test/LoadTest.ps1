@@ -1,8 +1,9 @@
 param([int]$Seconds = 60, [int]$Intensity = 5, $TestApi)
 
 $report = @{
-    jobs = @();
-    avg  = 0
+    jobs    = @();
+    outputs = @();
+    avgInMs     = 0;
 }
 
 for ($x = 0; $x -lt $Intensity; $x++) { 
@@ -20,7 +21,7 @@ for ($x = 0; $x -lt $Intensity; $x++) {
             $end = Get-Date
             $diff = New-TimeSpan -Start $current -End $end
 
-            for ($i = 0; $i -lt 1000; $i++) {
+            for ($i = 0; $i -lt 10; $i++) {
                 $total += (Measure-Command -Expression { 
 
                         if ($TestApi -eq "todo") {
@@ -31,7 +32,7 @@ for ($x = 0; $x -lt $Intensity; $x++) {
                         }
 
                         if ($TestApi -eq "ping") {
-                            Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post;
+                            Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post
                         }                                                                        
                     }).Milliseconds
                 $counter += 1
@@ -51,15 +52,17 @@ for ($x = 0; $x -lt $Intensity; $x++) {
 }
 
 While (Get-Job -State "Running") {    
-    Get-Job
     Start-Sleep 10
 }
 
 $total = 0
 for ($x = 0; $x -lt $Intensity; $x++) { 
-    $total += Receive-Job -Job $report.jobs[$x]
+    $avg = Receive-Job -Job $report.jobs[$x] 6>&1
+    $report.outputs += $avg
+    Remove-Job -Name $report.jobs[$x].Name
+    $total += ([System.Convert]::ToDecimal($avg.ToString()))
 }
 
-$report.avg = $total / $Intensity
+$report.avgInMs = $total / $Intensity
 
 return $report
