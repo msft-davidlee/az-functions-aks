@@ -46,5 +46,4 @@ for ($x = 0; $x -lt $Intensity; $x++) {
     } -ArgumentList @($Seconds, $report, $TestApi)
 }
 
-Get-Job
-$report
+return $report
