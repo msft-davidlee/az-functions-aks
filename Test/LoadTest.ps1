@@ -1,11 +1,13 @@
 param([int]$Seconds = 60, [int]$Intensity = 5, $TestApi)
 
 $report = @{
-    items = @()
+    items = @();
+    jobs  = @();
 }
+
 for ($x = 0; $x -lt $Intensity; $x++) { 
     # Start Parallel Jobs
-    Start-Job -ScriptBlock {
+    $job = Start-Job -ScriptBlock {
         param($Seconds, $Report, $TestApi)        
         
         $current = Get-Date
@@ -44,6 +46,8 @@ for ($x = 0; $x -lt $Intensity; $x++) {
         $Report.items += $avg
 
     } -ArgumentList @($Seconds, $report, $TestApi)
+
+    $report.jobs += $job
 }
 
 return $report
