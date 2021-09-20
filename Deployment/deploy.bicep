@@ -49,9 +49,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
         osDiskSizeGB: 60
         count: 1
         minCount: 1
-        maxCount: 6
+        maxCount: 3
         enableAutoScaling: true
-        vmSize: 'Standard_D2_v2'
+        vmSize: 'Standard_B2ms'
         osType: 'Linux'
         osDiskType: 'Managed'
         vnetSubnetID: subnetId
