@@ -82,7 +82,7 @@ if (!$nlist -or $nlist.items.Length -eq 0) {
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm repo add kedacore https://kedacore.github.io/charts
     helm repo update
-    helm install keda kedacore/keda -n app
+    helm install keda kedacore/keda -n keda
     # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
     helm install http-add-on kedacore/keda-add-ons-http -n app
     helm install ingress-nginx ingress-nginx/ingress-nginx -n app
