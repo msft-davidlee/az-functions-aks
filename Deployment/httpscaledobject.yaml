@@ -3,10 +3,11 @@ apiVersion: http.keda.sh/v1alpha1
 metadata:
     name: httpfuncapp-scaled-obj
 spec:
+    host: contosoapi.com
     scaleTargetRef:
         deployment: httpfuncapp
         service: httpfuncapp
         port: 80
     replicas:
-        min: 5
+        min: 2
         max: 20
