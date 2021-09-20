@@ -8,5 +8,5 @@ spec:
         service: httpfuncapp
         port: 80
     replicas:
-        min: 1
+        min: 5
         max: 20
