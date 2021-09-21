@@ -131,8 +131,6 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to apply service.yaml."
 }
 
-return
-
 kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
 if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to apply httpscaledobject.yaml."
