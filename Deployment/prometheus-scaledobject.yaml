@@ -11,7 +11,7 @@ spec:
     pollingInterval: 15
     cooldownPeriod:  30
     minReplicaCount: 1
-    maxReplicaCount: 10
+    maxReplicaCount: 100
     triggers:
     - type: prometheus
       metadata:
