@@ -1,0 +1,21 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+    name: prometheus-scaledobject
+    namespace: app
+    labels:
+        deploymentName: httpfuncapp
+spec:
+    scaleTargetRef:
+        name: httpfuncapp
+    pollingInterval: 15
+    cooldownPeriod:  30
+    minReplicaCount: 1
+    maxReplicaCount: 100
+    triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus-server.app.svc.cluster.local:9090
+        metricName: access_frequency
+        threshold: '1'
+        query: sum(rate(nginx_ingress_controller_requests[1m]))

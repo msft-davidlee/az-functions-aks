@@ -1,0 +1,64 @@
+on: 
+  push:
+  workflow_dispatch:
+    inputs:
+      environmentselector:
+        description: 'Environment selector'     
+        required: false
+        default: 'default'
+
+jobs:
+  setup:
+    name: Choose Secrets Environment Job
+    runs-on: windows-latest
+    steps:
+      - id: setup
+        name: Setup Environment Setp
+        run: |
+          $envSelector = "${{ github.event.inputs.environmentselector }}"
+          if ($envSelector -eq '' -or $envSelector -eq 'default') {            
+            if ('${{ github.ref }}' -eq 'refs/heads/main') { 
+              echo "::set-output name=build_env::prod"              
+            } else {
+              echo "::set-output name=build_env::dev"              
+            }
+          } else {
+            echo "::set-output name=build_env::$envSelector"            
+          }
+    outputs:
+      build_env: ${{ steps.setup.outputs.build_env }}      
+
+  build_deploy:
+    name: Build, Deploy Environment Job
+    needs: setup
+    environment: ${{ needs.setup.outputs.build_env }}
+    runs-on: windows-latest
+    steps:    
+      - uses: actions/checkout@v2
+        with:
+          path: 'tools'
+      - uses: actions/checkout@v2
+        with:
+          repository: 'msft-davidlee/az-blazor-wasm'
+          ref: 'refs/heads/main'
+          path: 'app'
+
+      - name: Azure CLI Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.MS_AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - id: buid-and-deploy
+        name: Build Azure environment
+        working-directory: .\tools
+        run: |
+          .\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
+            -APP_PATH ..\app `
+            -BUILD_ENV ${{ needs.setup.outputs.build_env }} `
+            -RESOURCE_GROUP ${{ secrets.RESOURCE_GROUP }} `
+            -PREFIX ${{ secrets.PREFIX }} `
+            -GITHUB_REF ${{ github.ref }} `
+            -CLIENT_ID ${{ secrets.CLIENT_ID }} `
+            -CLIENT_SECRET ${{ secrets.CLIENT_SECRET }} `
+            -MANAGED_USER_ID ${{ secrets.MANAGED_USER_ID }}

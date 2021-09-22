@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpfuncapp
+  namespace: app
+  labels:
+    app: httpfuncapp
+spec:
+  selector:
+    matchLabels:
+      app: httpfuncapp
+  template:
+    metadata:
+      labels:
+        app: httpfuncapp
+    spec:
+      containers:
+        - name: httpfuncapp
+          image: "%IMAGE%"          
+          env:
+          - name: AzureWebJobsStorage
+            value: "%AZURE_STORAGE_CONNECTION%"
+          - name: FUNCTIONS_WORKER_RUNTIME
+            value: "dotnet-isolated"
+          - name: TableStorageConnection
+            value: "%AZURE_STORAGE_CONNECTION%"
+          - name: DisableAuthentication
+            value: "true"                                          
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
