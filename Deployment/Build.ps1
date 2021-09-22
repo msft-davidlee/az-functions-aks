@@ -7,8 +7,6 @@ param(
     [string]$GITHUB_REF,
     [string]$CLIENT_ID,
     [string]$CLIENT_SECRET,
-    [string]$AD_CLIENT_ID,
-    [string]$AD_INSTANCE,
     [string]$MANAGED_USER_ID)
 
 $ErrorActionPreference = "Stop"
@@ -128,8 +126,6 @@ if (!$list -or !$list.Contains("app")) {
 $deployment = Get-Content Deployment/deployment.yaml
 $deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
 $deployment = $deployment.Replace('%AZURE_STORAGE_CONNECTION%', $storageConnection)
-$deployment = $deployment.Replace('"%AD_CLIENT_ID%"', $AD_CLIENT_ID)
-$deployment = $deployment.Replace('"%AD_INSTANCE%"', $AD_INSTANCE)
 
 Set-Content -Path "deployment.tmp" -Value $deployment
 kubectl apply -f "deployment.tmp" --namespace app

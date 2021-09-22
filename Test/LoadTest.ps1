@@ -12,7 +12,7 @@ $report = @{
 for ($x = 0; $x -lt $Intensity; $x++) {
 
     if ($Incremental) {
-        Start-Sleep ($x * 2)
+        Start-Sleep -Seconds 1
     }
 
     # Start Parallel Jobs
