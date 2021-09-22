@@ -41,7 +41,10 @@ Ensure you have successfully deploy this solution before running the demo.
 5. On your local machine, let's start running the load test. Be sure to run the command from the root of this git repo. ``` $report = .\Test\LoadTest.ps1 -Seconds 60 -Intensity 10 -TestApi todo;$report ```
 6. To watch for running pods, run the following command ``` kubectl get pods -o=name --field-selector=status.phase=Running -n app --watch ```
 7. To observe the HPA in action, run ``` kubectl describe hpa -n app ``` For a simple version, run ``` kubectl get hpa -n app ```
-8. Now, you can start experimenting with running a few more load tests with varying intensity and time. 
+8. Now, you can start experimenting with running a few more load tests with varying intensity and time.
+9. You can also review the insights view of your AKS cluster as well as Storage insights for how the "db" is handling your load. Azure Storage can scale really well and this shows the power of serverless.
+10. When you click on the IP address itself, you will also be able to redirect to Prometheus to view the requests. Try the following command to see the load: ``` rate(nginx_ingress_controller_requests[1m]) ```
+11. Lastly, because you have configured your local DNS via host file, you should be able to hit this endpoint and see your function running http://contosoapi.com
 
 ## About the Load Test
 The load test will perform either a ping test or invoke a todo where an actual todo payload is created in the storage account. Please review following parameters:
