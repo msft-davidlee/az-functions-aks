@@ -12,19 +12,12 @@ $report = @{
 for ($x = 0; $x -lt $Intensity; $x++) {
 
     if ($Incremental) {
-        $WaitInSeconds = $x * 2
-    }
-    else {
-        $WaitInSeconds = 0
+        Start-Sleep ($x * 2)
     }
 
     # Start Parallel Jobs
     $job = Start-Job -ScriptBlock {
-        param($Seconds, $TestApi, $WaitInSeconds)
-        
-        if ($WaitInSeconds -and $WaitInSeconds -gt 0) {
-            Start-Sleep $WaitInSeconds
-        }
+        param($Seconds, $TestApi)
         
         $current = Get-Date
         $total = 0
@@ -34,42 +27,40 @@ for ($x = 0; $x -lt $Intensity; $x++) {
         $failure = 0;
         while ($true) {
             
+            $total += (Measure-Command -Expression { 
+
+                    if ($TestApi -eq "todo") {
+                        $description = (New-Guid).ToString().Replace("-", " ")
+                        $body = @{ description = $description; }
+
+                        try {
+                            Invoke-RestMethod -UseBasicParsing -Uri ($url + "/todo") -Body ($body | ConvertTo-Json) -Method Post
+                            $success += 1 
+                        }
+                        catch {
+                            $failure += 1
+                        }
+                
+                    }
+
+                    if ($TestApi -eq "ping") {
+
+                        try {
+                            Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post
+                            $success += 1
+                        }
+                        catch {
+                            $failure += 1
+                        }
+                
+                    }                                                                        
+                }).TotalMilliseconds
+            
+            $counter += 1
+
             $end = Get-Date
             $diff = New-TimeSpan -Start $current -End $end
-
-            for ($i = 0; $i -lt 10; $i++) {
-                $total += (Measure-Command -Expression { 
-
-                        if ($TestApi -eq "todo") {
-                            $description = (New-Guid).ToString().Replace("-", " ")
-                            $body = @{ description = $description; }
-    
-                            try {
-                                Invoke-RestMethod -UseBasicParsing -Uri ($url + "/todo") -Body ($body | ConvertTo-Json) -Method Post
-                                $success += 1 
-                            }
-                            catch {
-                                $failure += 1
-                            }
-                            
-                        }
-
-                        if ($TestApi -eq "ping") {
-
-                            try {
-                                Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post
-                                $success += 1
-                            }
-                            catch {
-                                $failure += 1
-                            }
-                            
-                        }                                                                        
-                    }).Milliseconds
-                $counter += 1
-            }
-
-            if ($diff.Seconds -gt $Seconds) {
+            if ($diff.TotalSeconds -gt $Seconds) {
                 break
             }
         }
@@ -78,7 +69,7 @@ for ($x = 0; $x -lt $Intensity; $x++) {
         Write-Host "$avg,$success,$failure"
 
     } -ArgumentList @($Seconds, $TestApi, $WaitInSeconds)
-
+    
     $report.jobs += $job
 }
 
@@ -87,6 +78,8 @@ While (Get-Job -State "Running") {
 }
 
 $total = 0
+$totalNumberOfRequests = 0
+$totalNumberOfRequestsThatFailed = 0
 for ($x = 0; $x -lt $Intensity; $x++) { 
     $output = Receive-Job -Job $report.jobs[$x] 6>&1
     $output = $output.ToString().Split(',')
@@ -95,6 +88,8 @@ for ($x = 0; $x -lt $Intensity; $x++) {
     $success = [System.Convert]::ToInt32($output[1].ToString())
     $failure = [System.Convert]::ToInt32($output[2].ToString())
 
+    $totalNumberOfRequests += ($success + $failure)
+    $totalNumberOfRequestsThatFailed += $failure
     $report.outputs += @{ 
         avg     = $avg; 
         success = $success; 
@@ -106,7 +101,9 @@ for ($x = 0; $x -lt $Intensity; $x++) {
 }
 
 $report.ended = Get-Date;
-$report.durationInSeconds = (New-TimeSpan -Start $report.started -End $report.ended).Seconds
+$report.durationInSeconds = (New-TimeSpan -Start $report.started -End $report.ended).TotalSeconds
 $report.avgInMs = $total / $Intensity
+$report.totalNumberOfRequests = $totalNumberOfRequests
+$report.failureRate = ($totalNumberOfRequestsThatFailed / $totalNumberOfRequests) * 100
 
 return $report

@@ -82,11 +82,20 @@ if (!$nlist -or $nlist.items.Length -eq 0) {
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm repo add kedacore https://kedacore.github.io/charts
     helm repo update
-    helm install ingress-nginx ingress-nginx/ingress-nginx -n app
+    
+    # TODO: Enable when we are ready to try out KEDA native implementation
+    #helm install ingress-nginx ingress-nginx/ingress-nginx -n app
+    
     helm install keda kedacore/keda -n app    
-    #helm install ingress-controller stable/nginx-ingress --namespace app set controller.replicaCount=2 set controller.metrics.enabled=true set controller.podAnnotations."prometheus\.io/scrape"="true" --set controller.podAnnotations."prometheus\.io/port"="10254"
+    helm install ingress-nginx ingress-nginx/ingress-nginx --namespace app `
+        --set controller.replicaCount=2 `
+        --set controller.metrics.enabled=true `
+        --set-string controller.podAnnotations."prometheus\.io/scrape"="true" `
+        --set-string controller.podAnnotations."prometheus\.io/port"="10254"
+    
+    # TODO: Enable when we are ready to try out KEDA native implementation
     # Here, we are also install the http add on as described here: https://github.com/kedacore/http-add-on/blob/main/docs/install.md#install-via-helm-chart
-    # helm install http-add-on kedacore/keda-add-ons-http -n app
+    # helm install http-add-on kedacore/keda-add-ons-http -n app    
 }
 else {
     Write-Host "Skipped installing kedacore and http."
@@ -133,12 +142,34 @@ if ($LastExitCode -ne 0) {
     throw "An error has occured. Unable to apply service.yaml."
 }
 
-kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
+kubectl apply --kustomize Deployment/prometheus -n app
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to apply httpscaledobject.yaml."
+    throw "An error has occured. Unable to apply prometheus directory."
 }
 
-kubectl apply -f Deployment/ingress.yaml --namespace app
+kubectl apply -f Deployment/functionapp-ingress.yml -n app
 if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to apply ingress.yaml."
+    throw "An error has occured. Unable to apply functionapp-ingress.yml."
 }
+
+kubectl apply -f Deployment/prom-ingress.yml -n app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to apply prom-ingress.yml."
+}
+
+kubectl apply -f Deployment/prometheus-scaledobject.yaml -n app
+if ($LastExitCode -ne 0) {
+    throw "An error has occured. Unable to apply prometheus-scaledobject.yaml."
+}
+
+# TODO: Enable when we are ready to try out KEDA native implementation
+# kubectl apply -f Deployment/httpscaledobject.yaml --namespace app
+# if ($LastExitCode -ne 0) {
+#     throw "An error has occured. Unable to apply httpscaledobject.yaml."
+# }
+
+# TODO: Enable when we are ready to try out KEDA native implementation
+# kubectl apply -f Deployment/ingress.yaml --namespace app
+# if ($LastExitCode -ne 0) {
+#     throw "An error has occured. Unable to apply ingress.yaml."
+# }
