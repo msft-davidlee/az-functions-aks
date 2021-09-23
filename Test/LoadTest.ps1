@@ -22,7 +22,7 @@ for ($x = 0; $x -lt $Intensity; $x++) {
         $current = Get-Date
         $total = 0
         $counter = 0
-        $url = "http://contosoapi.com"
+        $url = "http://api.contoso.com"
         $success = 0;
         $failure = 0;
         while ($true) {

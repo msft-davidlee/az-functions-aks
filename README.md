@@ -5,10 +5,17 @@ The information contained in this README.md file and any accompanying materials 
 This project demonstrates the ability to run Azure Functions on AKS using KEDA which means having the ability to be decide on the type of VMs (potentially lower your cost compared to a Premium Plan) to leverage for running your serverless workloads inside your own VNET (which Consumption Plan does not do).
 
 ### Azure Function
-The Azure Function itself is running in .NET 5, and is using the isolated process. For more information on the difference, see: https://docs.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide. Note that we are reusing the todo app from https://github.com/msft-davidlee/az-blazor-wasm which had been enhanced in order to be dockerized. 
+The Azure Function itself is running in .NET 5, and is using the isolated process. For more information on the difference, see: https://docs.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide. Note that we are reusing the todo app from https://github.com/msft-davidlee/az-blazor-wasm which had been dockerized i.e. dockerfile was added. 
 
 ## Architecture
-The following uses KEDA and the prometheus scaler for auto-scaling: https://keda.sh/docs/1.4/scalers/prometheus/. However, there is also a upcoming implementation from the KEDA team which makes it easier. For more information on that approach, see: https://github.com/kedacore/http-add-on
+
+1. There are two levels of scaling, scaling the number of nodes, and scaling the number of pods. We have enabled cluster autoscaling on the AKS cluster which means scaling of the pods are taken care of by with a min and a max number of nodes value configured. The scaling of the pods are taken care of by the KEDA horizontal pod autoscaler. The values are defined in the yaml file in prometheus-scaledobject.yaml. The query is based on the number of HTTP requests and can be view on the Prometheus dashboard. For more information, see prometheus scaler for auto-scaling: https://keda.sh/docs/1.4/scalers/prometheus/. However, there is also a upcoming implementation from the KEDA team which makes it easier. For more information on that approach, see: https://github.com/kedacore/http-add-on
+2. For a higher level of security, access to the Storage Account is restricted by Service endpoints confiugred on the Storage Account.
+3. There is a Service Principal assigned to the AKS Cluster which has permissions to create the necessary resources in the Subscription. I am using this approach VS creating a managed identity because I can pre-assign the Service Principal with the right roles. A managed identity means I have to manually assign roles/permissions which does not help in automation.
+4. The pods in the AKS cluster are running with their own networking i.e. kubenet VS Azure CNI. This means the Azure Functions are even isolated from the Azure network itself and external consumers outside cannot easily access them directly unless we have configured the ingress controller on the AKS cluster - which we did for the purpose of this demo. The Azure Function running iside the pod access the Storage Account via Storage service endpoints. Alternatively, we could have also used Private links to ensure traffic stays within the Azure network.
+
+## More on scaling
+A load test tool has been created that demonstrates the power of auto-scaling which speaks to how we can compare this approach with the consumption plan. See section on load test below.
 
 # Get Started
 To create this, please follow the steps below. 
@@ -35,7 +42,7 @@ To create this, please follow the steps below.
 Ensure you have successfully deploy this solution before running the demo. 
 
 1. Once the deployment is completed successfully, you need to figure out the public ip assigned. You can find out from the Portal by going to the cluster and viewing the Services and Ingress page.
-2. Next you need to update your host file ``` C:\Windows\System32\drivers\etc\hosts ``` with the entry ``` <IP Address> contosoapi.com ```
+2. Next you need to update your host file ``` C:\Windows\System32\drivers\etc\hosts ``` with the entry ``` <IP Address> api.contoso.com ```
 3. Login to CloudShell and run the following command ``` az aks get-credentials --resource-group <Resource Group name> --name <Cluster Name> ``` - Be sure to change the resource group name and cluster name!
 4. Run the following command to get the pods that are running: ``` kubectl get pods -n app ```
 5. On your local machine, let's start running the load test. Be sure to run the command from the root of this git repo. ``` $report = .\Test\LoadTest.ps1 -Seconds 60 -Intensity 10 -TestApi todo;$report ```
@@ -44,7 +51,7 @@ Ensure you have successfully deploy this solution before running the demo.
 8. Now, you can start experimenting with running a few more load tests with varying intensity and time.
 9. You can also review the insights view of your AKS cluster as well as Storage insights for how the "db" is handling your load. Azure Storage can scale really well and this shows the power of serverless.
 10. When you click on the IP address itself, you will also be able to redirect to Prometheus to view the requests. Try the following command to see the load: ``` rate(nginx_ingress_controller_requests[1m]) ```
-11. Lastly, because you have configured your local DNS via host file, you should be able to hit this endpoint and see your function running http://contosoapi.com
+11. Lastly, because you have configured your local DNS via host file, you should be able to hit this endpoint and see your function running http://api.contoso.com
 
 ## About the Load Test
 The load test will perform either a ping test or invoke a todo where an actual todo payload is created in the storage account. Please review following parameters:
@@ -60,7 +67,7 @@ The load test will perform either a ping test or invoke a todo where an actual t
 If you manually run a ping test, you can run the following commands.
 
 ```
-$url="http://contosoapi.com"
+$url="http://api.contoso.com"
 Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post
 ```
 
