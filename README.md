@@ -35,7 +35,7 @@ To create this, please follow the steps below.
 Ensure you have successfully deploy this solution before running the demo. 
 
 1. Once the deployment is completed successfully, you need to figure out the public ip assigned. You can find out from the Portal by going to the cluster and viewing the Services and Ingress page.
-2. Next you need to update your host file ``` C:\Windows\System32\drivers\etc\hosts ``` with the entry ``` <IP Address> contosoapi.com ```
+2. Next you need to update your host file ``` C:\Windows\System32\drivers\etc\hosts ``` with the entry ``` <IP Address> api.contoso.com ```
 3. Login to CloudShell and run the following command ``` az aks get-credentials --resource-group <Resource Group name> --name <Cluster Name> ``` - Be sure to change the resource group name and cluster name!
 4. Run the following command to get the pods that are running: ``` kubectl get pods -n app ```
 5. On your local machine, let's start running the load test. Be sure to run the command from the root of this git repo. ``` $report = .\Test\LoadTest.ps1 -Seconds 60 -Intensity 10 -TestApi todo;$report ```
@@ -44,7 +44,7 @@ Ensure you have successfully deploy this solution before running the demo.
 8. Now, you can start experimenting with running a few more load tests with varying intensity and time.
 9. You can also review the insights view of your AKS cluster as well as Storage insights for how the "db" is handling your load. Azure Storage can scale really well and this shows the power of serverless.
 10. When you click on the IP address itself, you will also be able to redirect to Prometheus to view the requests. Try the following command to see the load: ``` rate(nginx_ingress_controller_requests[1m]) ```
-11. Lastly, because you have configured your local DNS via host file, you should be able to hit this endpoint and see your function running http://contosoapi.com
+11. Lastly, because you have configured your local DNS via host file, you should be able to hit this endpoint and see your function running http://api.contoso.com
 
 ## About the Load Test
 The load test will perform either a ping test or invoke a todo where an actual todo payload is created in the storage account. Please review following parameters:
@@ -60,7 +60,7 @@ The load test will perform either a ping test or invoke a todo where an actual t
 If you manually run a ping test, you can run the following commands.
 
 ```
-$url="http://contosoapi.com"
+$url="http://api.contoso.com"
 Invoke-RestMethod -UseBasicParsing -Uri ($url + "/ping") -Method Post
 ```
 
