@@ -35,6 +35,8 @@ if (!$subnetId) {
     throw "Unable to find Subnet resource!"
 }
 
+az network vnet subnet update -g $vnetRg -n aks --vnet-name $vnetName --service-endpoints Microsoft.Storage
+
 $rgName = "$RESOURCE_GROUP-$BUILD_ENV"
 $deployOutputText = (az deployment group create --name $deploymentName --resource-group $rgName --template-file Deployment/deploy.bicep --parameters `
         location=$location `
