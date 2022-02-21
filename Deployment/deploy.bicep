@@ -99,7 +99,6 @@ resource customscript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   location: location
   tags: tags
   dependsOn: [
-    acr
     aks
   ]
   identity: {
@@ -153,4 +152,5 @@ resource tableInStorageAccount 'Microsoft.Storage/storageAccounts/tableServices/
 
 output acrName string = acr.name
 output aksName string = aks.name
+#disable-next-line outputs-should-not-contain-secrets
 output storageConnection string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
