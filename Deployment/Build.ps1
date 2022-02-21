@@ -26,7 +26,6 @@ if (!$vnet) {
 }
 $vnetRg = $vnet.resourceGroup
 $vnetName = $vnet.name
-$location = $vnet.location
 $subnets = (az network vnet subnet list -g $vnetRg --vnet-name $vnetName | ConvertFrom-Json)
 if (!$subnets) {
     throw "Unable to find eligible Subnets from Virtual Network $vnetName!"
@@ -38,6 +37,7 @@ if (!$subnetId) {
 
 az network vnet subnet update -g $vnetRg -n aks --vnet-name $vnetName --service-endpoints Microsoft.Storage
 
+$location = "centralus"
 $deployOutputText = (az deployment group create --name $deploymentName --resource-group $RESOURCE_GROUP --template-file Deployment/deploy.bicep --parameters `
         location=$location `
         prefix=$PREFIX `
