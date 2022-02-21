@@ -9,12 +9,14 @@ param clientSecret string
 param managedUserId string
 param scriptVersion string = utcNow()
 param kubernetesVersion string = '1.21.2'
+param version string
 
 var stackName = '${prefix}${appEnvironment}'
 var tags = {
   'stack-name': stackName
-  'environment': appEnvironment
-  'branch': branch
+  'stack-environment': appEnvironment
+  'stack-branch': branch
+  'stack-version': version
 }
 
 resource wks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
