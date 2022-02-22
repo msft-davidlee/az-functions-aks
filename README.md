@@ -12,7 +12,7 @@ The Azure Function itself is running in .NET 6, and is using the isolated proces
 1. There are two levels of scaling, scaling the number of nodes, and scaling the number of pods. We have enabled cluster autoscaling on the AKS cluster which means scaling of the pods are taken care of by with a min and a max number of nodes value configured. The scaling of the pods are taken care of by the KEDA horizontal pod autoscaler. The values are defined in the yaml file in prometheus-scaledobject.yaml. The query is based on the number of HTTP requests and can be view on the Prometheus dashboard. For more information, see prometheus scaler for auto-scaling: https://keda.sh/docs/1.4/scalers/prometheus/. However, there is also a upcoming implementation from the KEDA team which makes it easier. For more information on that approach, see: https://github.com/kedacore/http-add-on
 2. For a higher level of security, access to the Storage Account is restricted by Service endpoints confiugred on the Storage Account.
 3. There is a Service Principal assigned to the AKS Cluster which has permissions to create the necessary resources in the Subscription. I am using this approach VS creating a managed identity because I can pre-assign the Service Principal with the right roles. A managed identity means I have to manually assign roles/permissions which does not help in automation.
-4. The pods in the AKS cluster are running with their own networking i.e. kubenet VS Azure CNI. This means the Azure Functions are even isolated from the Azure network itself and external consumers outside cannot easily access them directly unless we have configured the ingress controller on the AKS cluster - which we did for the purpose of this demo. The Azure Function running iside the pod access the Storage Account via Storage service endpoints. Alternatively, we could have also used Private links to ensure traffic stays within the Azure network.
+4. The pods in the AKS cluster are running with their own networking i.e. kubenet VS Azure CNI. This means the Azure Functions are even isolated from the Azure network itself and external consumers outside cannot easily access them directly unless we have configured the ingress controller on the AKS cluster - which we did for the purpose of this demo. The Azure Function running inside the pod access the Storage Account via Storage service endpoints. Alternatively, we could have also used Private links to ensure traffic stays within the Azure network.
 
 ## More on scaling
 A load test tool has been created that demonstrates the power of auto-scaling which speaks to how we can compare this approach with the consumption plan. See section on load test below.
@@ -77,6 +77,22 @@ You will get the following back as an example. This would be a good way to make 
 Value Timestamp                    Server                       OS
 ----- ---------                    ------                       --
 pong  2021-09-22T19:35:42.4705769Z httpfuncapp-69d545dc7b-gfl9w @{Platform=4; ServicePack=; Version=; VersionString=...
+```
+
+## Log Analytics Query
+You can also use the following log analytics query to see the number of pods and nodes over a period of time.
+
+```
+KubePodInventory 
+| where TimeGenerated > ago(60m)
+| where PodStatus == "Running" and ServiceName == "httpfuncapp"
+| summarize count() by bin(TimeGenerated, 1m)
+| render columnchart
+
+KubeNodeInventory
+| where TimeGenerated > ago(60m)
+| summarize count() by bin(TimeGenerated, 1m)
+| render columnchart
 ```
 
 ## Have an issue?

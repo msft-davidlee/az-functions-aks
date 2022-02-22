@@ -1,5 +1,7 @@
 on: 
   push:
+    paths-ignore: 
+      - readme.md
   workflow_dispatch:
     inputs:
       environmentselector:
