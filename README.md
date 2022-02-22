@@ -80,7 +80,7 @@ pong  2021-09-22T19:35:42.4705769Z httpfuncapp-69d545dc7b-gfl9w @{Platform=4; Se
 ```
 
 ## Log Analytics Query
-You can also use the following log analytics query to see the number of pods and nodes over a period of time.
+You can also use the following log analytics query to see the number of pods and nodes over a period of time Note we use 1 min granularity as information is ingested every minute.
 
 ```
 KubePodInventory 
