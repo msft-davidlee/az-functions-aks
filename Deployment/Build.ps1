@@ -7,7 +7,8 @@ param(
     [string]$GITHUB_REF,
     [string]$CLIENT_ID,
     [string]$CLIENT_SECRET,
-    [string]$MANAGED_USER_ID)
+    [string]$MANAGED_USER_ID,
+    [string]$VERSION)
 
 $ErrorActionPreference = "Stop"
 
@@ -25,7 +26,6 @@ if (!$vnet) {
 }
 $vnetRg = $vnet.resourceGroup
 $vnetName = $vnet.name
-$location = $vnet.location
 $subnets = (az network vnet subnet list -g $vnetRg --vnet-name $vnetName | ConvertFrom-Json)
 if (!$subnets) {
     throw "Unable to find eligible Subnets from Virtual Network $vnetName!"
@@ -37,8 +37,8 @@ if (!$subnetId) {
 
 az network vnet subnet update -g $vnetRg -n aks --vnet-name $vnetName --service-endpoints Microsoft.Storage
 
-$rgName = "$RESOURCE_GROUP-$BUILD_ENV"
-$deployOutputText = (az deployment group create --name $deploymentName --resource-group $rgName --template-file Deployment/deploy.bicep --parameters `
+$location = "centralus"
+$deployOutputText = (az deployment group create --name $deploymentName --resource-group $RESOURCE_GROUP --template-file Deployment/deploy.bicep --parameters `
         location=$location `
         prefix=$PREFIX `
         appEnvironment=$BUILD_ENV `
@@ -47,6 +47,7 @@ $deployOutputText = (az deployment group create --name $deploymentName --resourc
         clientSecret=$CLIENT_SECRET `
         managedUserId=$MANAGED_USER_ID `
         subnetId=$subnetId `
+        version=$VERSION `
         kubernetesVersion=$K_VERSION)
 
 $deployOutput = $deployOutputText | ConvertFrom-Json
@@ -56,7 +57,7 @@ $storageConnection = $deployOutput.properties.outputs.storageConnection.value
 
 # Install Kubernets CLI and Login to AKS
 az aks install-cli
-az aks get-credentials --resource-group $rgName --name $aksName
+az aks get-credentials --resource-group $RESOURCE_GROUP --name $aksName
 
 # Install Azure Function Core tools
 npm i -g azure-functions-core-tools@3 --unsafe-perm true

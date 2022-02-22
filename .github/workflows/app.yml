@@ -61,4 +61,5 @@ jobs:
             -GITHUB_REF ${{ github.ref }} `
             -CLIENT_ID ${{ secrets.CLIENT_ID }} `
             -CLIENT_SECRET ${{ secrets.CLIENT_SECRET }} `
+            -VERSION ${{ github.run_number }} `
             -MANAGED_USER_ID ${{ secrets.MANAGED_USER_ID }}
