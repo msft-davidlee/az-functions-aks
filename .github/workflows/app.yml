@@ -1,7 +1,7 @@
 on: 
   push:
     paths-ignore: 
-      - '**/README.md'
+      - 'README.md'
   workflow_dispatch:
     inputs:
       environmentselector:
