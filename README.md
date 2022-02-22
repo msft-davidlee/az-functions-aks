@@ -79,7 +79,7 @@ Value Timestamp                    Server                       OS
 pong  2021-09-22T19:35:42.4705769Z httpfuncapp-69d545dc7b-gfl9w @{Platform=4; ServicePack=; Version=; VersionString=...
 ```
 
-## Log Analytics Query
+## Queries
 You can also use the following log analytics query to see the number of pods and nodes over a period of time Note we use 1 min granularity as information is ingested every minute.
 
 ```
@@ -93,6 +93,12 @@ KubeNodeInventory
 | where TimeGenerated > ago(60m)
 | summarize count() by bin(TimeGenerated, 1m)
 | render columnchart
+```
+
+The following can be executed in cloudshell to get the node count.
+
+```
+az aks show -g <resource group name> -n <name of aks cluster> --query agentPoolProfiles[0].count
 ```
 
 ## Have an issue?
