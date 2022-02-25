@@ -1,5 +1,4 @@
-param(
-    [string]$NETWORKING_PREFIX, 
+param(    
     [string]$APP_PATH,
     [string]$BUILD_ENV, 
     [string]$RESOURCE_GROUP, 
@@ -13,7 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $deploymentName = "aksdeploy" + (Get-Date).ToString("yyyyMMddHHmmss")
-$platformRes = (az resource list --tag stack-name=$NETWORKING_PREFIX | ConvertFrom-Json)
+$platformRes = (az resource list --tag stack-name=platform | ConvertFrom-Json)
 if (!$platformRes) {
     throw "Unable to find eligible Virtual Network resource!"
 }

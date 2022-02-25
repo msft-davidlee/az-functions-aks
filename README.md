@@ -38,7 +38,6 @@ To create this, please follow the steps below.
 | CLIENT_SECRET | Serivce Principal Client Secret running AKS cluster  |
 | RESOURCE_GROUP | resource group of this workload |
 | MANAGED_USER_ID | user id you have assigned as a managed user identity in your resource group |
-| NETWORKING_PREFIX | Used to discover which network you are creating your AKS cluster in |
 
 # Demo
 Ensure you have successfully deploy this solution before running the demo. 

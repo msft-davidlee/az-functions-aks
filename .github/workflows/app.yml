@@ -47,8 +47,7 @@ jobs:
       - id: buid-and-deploy
         name: Build Azure environment        
         run: |
-          .\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
-            -APP_PATH ..\app `
+          .\Deployment\Build.ps1 -APP_PATH ..\app `
             -BUILD_ENV ${{ needs.setup.outputs.build_env }} `
             -RESOURCE_GROUP ${{ secrets.RESOURCE_GROUP }} `
             -PREFIX ${{ secrets.PREFIX }} `
