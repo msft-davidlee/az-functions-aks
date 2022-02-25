@@ -10,6 +10,7 @@ param managedUserId string
 param scriptVersion string = utcNow()
 param kubernetesVersion string = '1.21.2'
 param version string
+param acrName string
 
 var stackName = '${prefix}${appEnvironment}'
 var tags = {
@@ -75,24 +76,6 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
   }
 }
 
-resource acr 'Microsoft.ContainerRegistry/registries@2021-06-01-preview' = {
-  name: stackName
-  location: location
-  tags: tags
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    publicNetworkAccess: 'Enabled'
-    anonymousPullEnabled: false
-    policies: {
-      retentionPolicy: {
-        days: 3
-      }
-    }
-  }
-}
-
 resource customscript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: stackName
   kind: 'AzurePowerShell'
@@ -111,7 +94,7 @@ resource customscript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     forceUpdateTag: scriptVersion
     azPowerShellVersion: '6.0'
     retentionInterval: 'P1D'
-    arguments: '-aksName ${prefix} -rgName ${resourceGroup().name} -acrName ${acr.name}'
+    arguments: '-aksName ${prefix} -rgName ${resourceGroup().name} -acrName ${acrName}'
     scriptContent: loadTextContent('configureAKS.ps1')
   }
 }
@@ -150,7 +133,6 @@ resource tableInStorageAccount 'Microsoft.Storage/storageAccounts/tableServices/
   name: 'TodoItem'
 }
 
-output acrName string = acr.name
 output aksName string = aks.name
 #disable-next-line outputs-should-not-contain-secrets
 output storageConnection string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'

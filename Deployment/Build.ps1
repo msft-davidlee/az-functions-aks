@@ -1,5 +1,4 @@
-param(
-    [string]$NETWORKING_PREFIX, 
+param(    
     [string]$APP_PATH,
     [string]$BUILD_ENV, 
     [string]$RESOURCE_GROUP, 
@@ -13,7 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $deploymentName = "aksdeploy" + (Get-Date).ToString("yyyyMMddHHmmss")
-$platformRes = (az resource list --tag stack-name=$NETWORKING_PREFIX | ConvertFrom-Json)
+$platformRes = (az resource list --tag stack-name=platform | ConvertFrom-Json)
 if (!$platformRes) {
     throw "Unable to find eligible Virtual Network resource!"
 }
@@ -37,6 +36,20 @@ if (!$subnetId) {
 
 az network vnet subnet update -g $vnetRg -n aks --vnet-name $vnetName --service-endpoints Microsoft.Storage
 
+$platformRes = (az resource list --tag stack-name=platform --tag stack-environment=prod | ConvertFrom-Json)
+if (!$platformRes) {
+    throw "Unable to find eligible platform resources!"
+}
+if ($platformRes.Length -eq 0) {
+    throw "Unable to find 'ANY' eligible platform resources!"
+}
+
+$acr = ($platformRes | Where-Object { $_.type -eq "Microsoft.ContainerRegistry/registries" })
+if (!$acr) {
+    throw "Unable to find eligible platform container registry!"
+}
+$acrName = $acr.Name
+
 $location = "centralus"
 $deployOutputText = (az deployment group create --name $deploymentName --resource-group $RESOURCE_GROUP --template-file Deployment/deploy.bicep --parameters `
         location=$location `
@@ -48,10 +61,10 @@ $deployOutputText = (az deployment group create --name $deploymentName --resourc
         managedUserId=$MANAGED_USER_ID `
         subnetId=$subnetId `
         version=$VERSION `
+        acrName=$acrName `
         kubernetesVersion=$K_VERSION)
 
 $deployOutput = $deployOutputText | ConvertFrom-Json
-$acrName = $deployOutput.properties.outputs.acrName.value
 $aksName = $deployOutput.properties.outputs.aksName.value
 $storageConnection = $deployOutput.properties.outputs.storageConnection.value
 
@@ -102,30 +115,7 @@ else {
     Write-Host "Skipped installing kedacore and http."
 }
 
-# Login to ACR
-az acr login --name $acrName
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to login to acr."
-}
-
-$list = az acr repository list --name $acrName | ConvertFrom-Json
-if ($LastExitCode -ne 0) {
-    throw "An error has occured. Unable to list from repository"
-}
-
-# Build your app with ACR build command
-$imageName = "app:v1"
-if (!$list -or !$list.Contains("app")) {
-    Push-Location $APP_PATH
-    az acr build --image $imageName -r $acrName --file ./MyTodo.Api/Dockerfile .
-    
-    if ($LastExitCode -ne 0) {
-        throw "An error has occured. Unable to build image."
-    }
-
-    Pop-Location
-}
-
+$imageName = "my-todo-api:1.0"
 $deployment = Get-Content Deployment/deployment.yaml
 $deployment = $deployment.Replace('"%IMAGE%"', "$acrName.azurecr.io/$imageName")
 $deployment = $deployment.Replace('%AZURE_STORAGE_CONNECTION%', $storageConnection)
