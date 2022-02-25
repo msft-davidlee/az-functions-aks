@@ -37,13 +37,6 @@ jobs:
     runs-on: windows-latest
     steps:    
       - uses: actions/checkout@v2
-        with:
-          path: 'tools'
-      - uses: actions/checkout@v2
-        with:
-          repository: 'msft-davidlee/az-blazor-wasm'
-          ref: 'refs/heads/main'
-          path: 'app'
 
       - name: Azure CLI Login
         uses: azure/login@v1
@@ -52,8 +45,7 @@ jobs:
           enable-AzPSSession: true
 
       - id: buid-and-deploy
-        name: Build Azure environment
-        working-directory: .\tools
+        name: Build Azure environment        
         run: |
           .\Deployment\Build.ps1 -NETWORKING_PREFIX ${{ secrets.NETWORKING_PREFIX }} `
             -APP_PATH ..\app `
