@@ -5,7 +5,9 @@ The information contained in this README.md file and any accompanying materials 
 This project demonstrates the ability to run Azure Functions on AKS using KEDA which means having the ability to be decide on the type of VMs (potentially lower your cost compared to a Premium Plan) to leverage for running your serverless workloads inside your own VNET (which Consumption Plan does not do).
 
 ### Azure Function
-The Azure Function itself is running in .NET 6, and is using the isolated process. For more information on the difference, see: https://docs.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide. Note that we are reusing the todo app from https://github.com/msft-davidlee/az-blazor-wasm which had been dockerized i.e. dockerfile was added. 
+The Azure Function itself is running in .NET 6, and is using the isolated process. For more information on the difference, see: https://docs.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide. Note that we are reusing the todo api from https://github.com/msft-davidlee/az-blazor-wasm which had been dockerized i.e. dockerfile was added. 
+
+Note that we are pulling the todo api image from Azure container registery, so you will need to first create the shared services for hosting the Azure Container Registery by following this: https://github.com/msft-davidlee/az-internal-shared-services and then run https://github.com/msft-davidlee/az-blazor-wasm to publish the container image to the Azure Container Registery you have created.
 
 ## Architecture
 
